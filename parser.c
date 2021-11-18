@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
 {
@@ -14,17 +15,21 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
     switch(state)
     {
         case 0:
-        {
+        {   
+            
+            memset(my_data.data,'\0', sizeof(my_data.data));
             if(crt_char == '\r')
             {
                 state = 1;
                 my_data.row_count = 0;
+                stop = false;
                 return STATE_MACHINE_NOT_READY;
             }
             else
             {
                 return STATE_MACHINE_READY_WITH_ERROR;
             }
+            
         }
         case 1:
         {
@@ -42,17 +47,20 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         {
             if(crt_char == 'O')
             {
+               
                 state = 3;
                 return STATE_MACHINE_NOT_READY;
             }
             else if(crt_char == 'E')
             {
                 state = 7;
+                stop = false;
                 return STATE_MACHINE_NOT_READY;
             }
             else if(crt_char == '+')
             {
                 state = 14;
+                stop = false;
                 return STATE_MACHINE_NOT_READY;
             }
         }
@@ -93,6 +101,9 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         }
         case 6:
         {
+            state = 0;
+            stop = false;
+            my_data.status = OK;
             return STATE_MACHINE_READY_OK;
         }
         case 7:
@@ -145,6 +156,7 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         }
         case 11:
         {
+
             if(crt_char == '\r')
             {
                 state = 12;
@@ -168,13 +180,17 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         }
         case 13:
         {
+            state = 0;
+            stop = false;
+            my_data.status = ERROR;
             return STATE_MACHINE_READY_OK;
         }
         case 14:
         {
+            
             if(crt_char >= 32 && crt_char <= 126)
             {
-                if(col_index < AT_COMMAND_MAX_LINE_SIZE && my_data.row_count < AT_COMMAND_MAX_LINES)
+                if(col_index < AT_COMMAND_MAX_LINE_SIZE)
                 {
                     if(stop == false)
                     {
@@ -189,13 +205,13 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
             if(crt_char == '\r')
             {
                 state = 15;
-                if(col_index <= AT_COMMAND_MAX_LINE_SIZE && my_data.row_count < AT_COMMAND_MAX_LINES)
+                if(col_index <= AT_COMMAND_MAX_LINE_SIZE)
                 {
                     if(stop == false)
                     {
-                        my_data.data[my_data.row_count][col_index] = '\0';
-                        col_index = 0;
+                        my_data.data[my_data.row_count][col_index] = '\0'; 
                     }
+                    col_index = 0;
                 }
                 return STATE_MACHINE_NOT_READY;
             }
@@ -206,6 +222,7 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         {
             if(crt_char == '\n')
             {
+                
                 state = 16;
                 return STATE_MACHINE_NOT_READY;
             }
@@ -218,6 +235,7 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
         {
             if(crt_char == '+')
             {
+                
                 if(my_data.row_count >= AT_COMMAND_MAX_LINES - 1)
                 {
                     stop=true;
@@ -225,13 +243,14 @@ STATE_MACHINE_RETURN_VALUE MY_AT_COMMAND_PARSE(uint8_t crt_char)
                 else
                 {
                     my_data.row_count++;
+                    
                 }
-                
                 state = 14;
                 return STATE_MACHINE_NOT_READY;
             }
             if(crt_char == '\r')
             {
+                
                 state = 17;
                 return STATE_MACHINE_NOT_READY;
             }

@@ -6,10 +6,16 @@
 #define AT_COMMAND_MAX_LINES 100
 #define AT_COMMAND_MAX_LINE_SIZE 100
 
+typedef enum{
+    OK = 1,
+    ERROR = 2
+}Status;
+
 typedef struct 
 {
     int data[AT_COMMAND_MAX_LINES][AT_COMMAND_MAX_LINE_SIZE];
     int row_count;
+    Status status;
 
 } AT_COMMAND_DATA;
 

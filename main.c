@@ -4,19 +4,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
-void print_matrix(int matrix[AT_COMMAND_MAX_LINES][AT_COMMAND_MAX_LINE_SIZE])
+void print_matrix(int matrix[AT_COMMAND_MAX_LINES][AT_COMMAND_MAX_LINE_SIZE], FILE *output)
 {
     int i, j;
-
+    static int crt = 1;
+    
+    fprintf(output, "\n------------------- %d ----------------------\n", crt );
     for(i=0; i <= my_data.row_count; i++)
     {
         for(j=0; j < AT_COMMAND_MAX_LINE_SIZE; j++)
         {
-            printf("%c", matrix[i][j]);
+            fprintf(output,"%c",matrix[i][j]);
         }
-        printf("\n");
+        fprintf(output,"\n");
     }
+    fprintf(output, "\n-----------------------------------------\n");
+    crt++;
 }
 
 int main(int argc, char **argv)
@@ -25,6 +30,7 @@ int main(int argc, char **argv)
     int continue_ = 0;
     int crt_char;
     FILE *my_file = fopen(argv[1], "rb");
+    FILE *output = fopen("output.txt", "w");
     
     if (argc != 2)
     {
@@ -34,6 +40,11 @@ int main(int argc, char **argv)
     if (my_file == NULL)
 	{
 	    printf("Error in the file!\n");
+		exit(EXIT_FAILURE);
+	}
+    if (output == NULL)
+	{
+	    printf("Error in the output file!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -47,9 +58,16 @@ int main(int argc, char **argv)
         }
         if(machine_result == 1)
         {
-            printf("OK: STATE_MACHINE_READY_OK\n");
-            print_matrix(my_data.data);
-            return 0;
+            printf("OK: STATE_MACHINE_READY_OK\t");
+            if(my_data.status == OK)
+            {
+                printf("Terminated with status: OK\n");
+            }
+            else
+            {
+                printf("Terminated with status: ERROR\n");
+            }
+            print_matrix(my_data.data, output);
         }
         if(machine_result == 2)
         {

@@ -6,22 +6,18 @@
 #include <stdbool.h>
 #include <string.h>
 
-void print_matrix(int matrix[AT_COMMAND_MAX_LINES][AT_COMMAND_MAX_LINE_SIZE], FILE *output)
+void print_matrix(int matrix[AT_COMMAND_MAX_LINES][AT_COMMAND_MAX_LINE_SIZE])
 {
     int i, j;
-    static int crt = 1;
     
-    fprintf(output, "\n------------------- %d ----------------------\n", crt );
     for(i=0; i <= my_data.row_count; i++)
     {
         for(j=0; j < AT_COMMAND_MAX_LINE_SIZE; j++)
         {
-            fprintf(output,"%c",matrix[i][j]);
+            printf("%c",matrix[i][j]);
         }
-        fprintf(output,"\n");
+        printf("\n");
     }
-    fprintf(output, "\n-----------------------------------------\n");
-    crt++;
 }
 
 int main(int argc, char **argv)
@@ -29,8 +25,8 @@ int main(int argc, char **argv)
     STATE_MACHINE_RETURN_VALUE machine_result;
     int continue_ = 0;
     int crt_char;
+    int cycle_count = 1;
     FILE *my_file = fopen(argv[1], "rb");
-    FILE *output = fopen("output.txt", "w");
     
     if (argc != 2)
     {
@@ -40,11 +36,6 @@ int main(int argc, char **argv)
     if (my_file == NULL)
 	{
 	    printf("Error in the file!\n");
-		exit(EXIT_FAILURE);
-	}
-    if (output == NULL)
-	{
-	    printf("Error in the output file!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -58,16 +49,19 @@ int main(int argc, char **argv)
         }
         if(machine_result == 1)
         {
-            printf("OK: STATE_MACHINE_READY_OK\t");
+            printf("////////////////////--%d--//////////////////////////\n",cycle_count);
+            print_matrix(my_data.data);
+            printf("OK: STATE_MACHINE_READY_OK\n");
             if(my_data.status == OK)
             {
-                printf("Terminated with status: OK\n");
+                printf("Status: OK\n");
             }
-            else
+            else if(my_data.status == ERROR)
             {
-                printf("Terminated with status: ERROR\n");
-            }
-            print_matrix(my_data.data, output);
+                printf("Status: ERROR\n");
+            }  
+            printf("////////////////////////////////////////////////////\n\n\n");
+            cycle_count++;
         }
         if(machine_result == 2)
         {
